@@ -18,12 +18,19 @@ Stream
 
 https://www.twitch.tv/tomcr00s3
 
-Usage
+Setup
 -----
 
 ```
- pip3 install python-chess torch torchvision numpy flask
- # then...
+ python3 -m venv venv
+ source venv/bin/activate
+ pip install pip --upgrade
+ pip install -r requirements.txt
+```
+
+Usage
+-----
+```
  ./play.py   # runs webserver on localhost:5000
 ```
 
