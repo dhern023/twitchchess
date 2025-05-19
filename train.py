@@ -25,47 +25,69 @@ class ChessValueDataset(Dataset):
 
 
 class Net(nn.Module):
-  def __init__(self):
-    super(Net, self).__init__()
-    self.a1 = nn.Conv2d(5, 16, kernel_size=3, padding=1)
+  """
+  Classification convolutional neural network for image like features.
+  """
+  def __init__(self, num_inputs=5, num_outputs = 1):
+    """
+    Convolutional layers (Conv2D) help detect these patterns by learning filters that highlight features like
+    lines, corners, and more abstract representations in deeper layers.
+    As the spatial size shrinks with stride, the number of filters grows based on convnet size
+
+    NOTE: Conv2D initializes biases to float32, and so does Linear with its weights,
+      which means the input vector needs to have the same dtype
+
+    padding=1 ensures the convnet doesn't shrink the dimensions.
+    stride=N reduces spatial dimensions (width x height) for downsampling by a factor of N dimensions
+    num_filters = number of filters
+    """
+    super(Net, self).__init__() # inherit from parent
+
+    self.a1 = nn.Conv2d(num_inputs, 16, kernel_size=3, padding=1)
     self.a2 = nn.Conv2d(16, 16, kernel_size=3, padding=1)
     self.a3 = nn.Conv2d(16, 32, kernel_size=3, stride=2)
 
+    # spatial dimensions = 8/2 x 8/2
     self.b1 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
     self.b2 = nn.Conv2d(32, 32, kernel_size=3, padding=1)
     self.b3 = nn.Conv2d(32, 64, kernel_size=3, stride=2)
 
+    # spatial dimensions = 8/2^2 x 8/2^2
     self.c1 = nn.Conv2d(64, 64, kernel_size=2, padding=1)
     self.c2 = nn.Conv2d(64, 64, kernel_size=2, padding=1)
     self.c3 = nn.Conv2d(64, 128, kernel_size=2, stride=2)
 
+    # spatial dimensions = 8/2^3 x 8/2^3
     self.d1 = nn.Conv2d(128, 128, kernel_size=1)
     self.d2 = nn.Conv2d(128, 128, kernel_size=1)
     self.d3 = nn.Conv2d(128, 128, kernel_size=1)
 
-    self.last = nn.Linear(128, 1)
+    self.relu = nn.ReLU()
+    self.tanh = nn.tanh()
+
+    self.last = nn.Linear(128, num_outputs)
 
   def forward(self, x):
-    x = F.relu(self.a1(x))
-    x = F.relu(self.a2(x))
-    x = F.relu(self.a3(x))
-
     # 4x4
-    x = F.relu(self.b1(x))
-    x = F.relu(self.b2(x))
-    x = F.relu(self.b3(x))
-
     # 2x2
-    x = F.relu(self.c1(x))
-    x = F.relu(self.c2(x))
-    x = F.relu(self.c3(x))
-
     # 1x128
-    x = F.relu(self.d1(x))
-    x = F.relu(self.d2(x))
-    x = F.relu(self.d3(x))
-
     x = x.view(-1, 128)
+    x = self.relu(self.a1(x))
+    x = self.relu(self.a2(x))
+    x = self.relu(self.a3(x))
+
+    x = self.relu(self.b1(x))
+    x = self.relu(self.b2(x))
+    x = self.relu(self.b3(x))
+
+    x = self.relu(self.c1(x))
+    x = self.relu(self.c2(x))
+    x = self.relu(self.c3(x))
+
+    x = self.relu(self.d1(x))
+    x = self.relu(self.d2(x))
+    x = self.relu(self.d3(x))
+
     x = self.last(x)
 
     # value output
@@ -95,7 +117,6 @@ if __name__ == "__main__":
     num_loss = 0
     for batch_idx, (data, target) in enumerate(train_loader):
       target = target.unsqueeze(-1)
-      data, target = data.to(device), target.to(device)
 
       #print(data.shape, target.shape)
       optimizer.zero_grad()
