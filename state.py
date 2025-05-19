@@ -83,13 +83,11 @@ class State(object):
     state = np.zeros((5,8,8), np.uint8)
 
     # 0-3 columns to binary
-    state[0] = (bstate>>3)&1
-    state[1] = (bstate>>2)&1
-    state[2] = (bstate>>1)&1
-    state[3] = (bstate>>0)&1
+    for i in range(4):
+      state[i] = (bstate>>4-1-i)&1 # convert to binary, then keep rightmost bit
 
     # 4th column is who's turn it is
-    state[4] = (self.board.turn*1.0)
+    state[4] = self.board.turn*1.0
 
     # 257 bits according to readme
     return state
