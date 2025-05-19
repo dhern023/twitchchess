@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-import os
 import chess.pgn
 import numpy as np
+import pathlib
 from state import State
 
 def get_dataset(num_samples=None):
   X,Y = [], []
   gn = 0
   values = {'1/2-1/2':0, '0-1':-1, '1-0':1}
-  # pgn files in the data folder
-  for fn in os.listdir("data"):
-    pgn = open(os.path.join("data", fn))
+
+  for fname in path_dir_pgn.glob("*.pgn"):
+    pgn = open(fname)
     while 1:
       game = chess.pgn.read_game(pgn)
       if game is None:
@@ -35,5 +35,7 @@ def get_dataset(num_samples=None):
 
 if __name__ == "__main__":
   X,Y = get_dataset(25000000)
+  DIR_DATA = pathtlib.Path(__file__).parent / "data"
+  X,Y = get_dataset_via_pgn(DIR_DATA, 25e6)
   np.savez("processed/dataset_25M.npz", X, Y)
 
