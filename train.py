@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import numpy as np
+import pathlib
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,17 +8,21 @@ from torch.utils.data import Dataset
 from torch import optim
 
 class ChessValueDataset(Dataset):
-  def __init__(self):
-    dat = np.load("processed/dataset_5M.npz")
+  def __init__(self, fname, device="cuda"):
+    dat = np.load(fname)
     self.X = dat['arr_0']
     self.Y = dat['arr_1']
     print("loaded", self.X.shape, self.Y.shape)
+    self.device = device
 
   def __len__(self):
     return self.X.shape[0]
 
   def __getitem__(self, idx):
-    return (self.X[idx], self.Y[idx])
+      x = torch.tensor(self.X[idx], dtype=torch.bfloat16, device=self.device)
+      y = torch.tensor(self.Y[idx], dtype=torch.long, device=self.device)
+      return x, y
+
 
 class Net(nn.Module):
   def __init__(self):
@@ -67,16 +72,18 @@ class Net(nn.Module):
     return F.tanh(x)
 
 if __name__ == "__main__":
-  device = "cuda"
 
-  chess_dataset = ChessValueDataset()
+  device = "cpu"
+  if torch.cuda.is_available():
+      device = "cuda":
+
+  fname_in = pathlib.Path(__file__) / "processed" / "dataset_5M.npz"
+  chess_dataset = ChessValueDataset(fname_in, device)
   train_loader = torch.utils.data.DataLoader(chess_dataset, batch_size=256, shuffle=True)
   model = Net()
   optimizer = optim.Adam(model.parameters())
   floss = nn.MSELoss()
-
-  if device == "cuda":
-    model.cuda()
+  model.to(device)
 
   model.train()
 
@@ -86,8 +93,6 @@ if __name__ == "__main__":
     for batch_idx, (data, target) in enumerate(train_loader):
       target = target.unsqueeze(-1)
       data, target = data.to(device), target.to(device)
-      data = data.float()
-      target = target.float()
 
       #print(data.shape, target.shape)
       optimizer.zero_grad()
