@@ -78,6 +78,9 @@ if __name__ == "__main__":
       device = "cuda":
 
   fname_in = pathlib.Path(__file__) / "processed" / "dataset_5M.npz"
+  DIR_OUT = pathlib.Path(__file__).parent / "nets"
+  DIR_OUT.mkdir(exist_ok=True, parents=True)
+
   chess_dataset = ChessValueDataset(fname_in, device)
   train_loader = torch.utils.data.DataLoader(chess_dataset, batch_size=256, shuffle=True)
   model = Net()
@@ -107,5 +110,5 @@ if __name__ == "__main__":
       num_loss += 1
 
     print("%3d: %f" % (epoch, all_loss/num_loss))
-    torch.save(model.state_dict(), "nets/value.pth")
+    torch.save(model.state_dict(), str(DIR_OUT / "value.pth"))
 
