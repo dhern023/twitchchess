@@ -4,7 +4,6 @@ import numpy as np
 import pathlib
 from state import State
 
-def get_dataset(num_samples=None):
 def extract_boards(instance_game):
     """
     Extracts serialized board from game
@@ -18,6 +17,24 @@ def extract_boards(instance_game):
 
     return list_out
 
+def get_dataset_via_pgn(path_dir_pgn, num_samples=None):
+  """
+  Reads and iterates over pgn files
+  chess.pgn.read_game works as a generator
+  no way to tell how large the file is aside from counting Results in file.
+  For 1M games: 
+    1:47:27
+  NOTE: A lot of games are ended by giving up
+
+  NOTE: Hard-coded labels
+      1/2-1/2 : tie
+      0-1     : R player wins
+      1-0     : L player wins
+
+  We read the games and process one at a time
+
+  TODO: Periodically writes to out file to avoid out-of-memory (OOM)
+  """
   X,Y = [], []
   gn = 0
   dict_map_result = {'1/2-1/2':0, '0-1':-1, '1-0':1}
@@ -25,6 +42,7 @@ def extract_boards(instance_game):
   for fname in path_dir_pgn.glob("*.pgn"):
     pgn = open(fname)
     while 1:
+      # read & parse
       game = chess.pgn.read_game(pgn)
       if game is None:
         break
@@ -48,7 +66,6 @@ def extract_boards(instance_game):
   return X,Y
 
 if __name__ == "__main__":
-  X,Y = get_dataset(25000000)
   DIR_DATA = pathtlib.Path(__file__).parent / "data"
   X,Y = get_dataset_via_pgn(DIR_DATA, 25e6)
   np.savez("processed/dataset_25M.npz", X, Y)
