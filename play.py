@@ -6,16 +6,22 @@ import time
 import chess.svg
 import traceback
 import base64
+import torch
+
 from state import State
+from train import Net
 
 class Valuator(object):
+  """
+  Call the model for inference
+  """
   def __init__(self):
-    import torch
-    from train import Net
     vals = torch.load("nets/value.pth", map_location=lambda storage, loc: storage)
     self.model = Net()
     self.model.load_state_dict(vals)
+    self.model.eval() # turn on evaluation mode
 
+  @torch.no_grad()
   def __call__(self, s):
     brd = s.serialize()[None]
     output = self.model(torch.tensor(brd).float())
