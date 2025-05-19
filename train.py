@@ -66,7 +66,7 @@ class Net(nn.Module):
     self.relu = nn.ReLU()
     self.tanh = nn.tanh()
 
-    self.last = nn.Linear(128, num_outputs)
+    self.linear = nn.Linear(128, num_outputs)
 
   def forward(self, x):
     # spatial dimensions = 8x8
@@ -91,7 +91,7 @@ class Net(nn.Module):
 
     B, T, C, _ = x.shape # (batch, num_filters, spatial_height, spatial_width)
     x = x.view(B, C * T) # (batch, num_filters * spatial_height * spatial_width)
-    x = self.last(x)
+    x = self.linear(x) # (batch, num_filters * 1) * (num_filters, num_outputs) -> (batch, num_outputs)
 
     out = self.tanh(x)
 
@@ -135,5 +135,5 @@ if __name__ == "__main__":
       num_loss += 1
 
     print("%3d: %f" % (epoch, all_loss/num_loss))
-    torch.save(model.state_dict(), str(DIR_OUT / "value.pth"))
+    torch.save(model.state_dict(), str(DIR_OUT / "value.pth")) # save latest model
 
