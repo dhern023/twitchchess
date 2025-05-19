@@ -19,7 +19,7 @@ class ChessValueDataset(Dataset):
     return self.X.shape[0]
 
   def __getitem__(self, idx):
-      x = torch.tensor(self.X[idx], dtype=torch.bfloat16, device=self.device)
+      x = torch.tensor(self.X[idx], dtype=torch.float, device=self.device)
       y = torch.tensor(self.Y[idx], dtype=torch.long, device=self.device)
       return x, y
 
