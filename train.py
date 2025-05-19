@@ -43,6 +43,7 @@ class Net(nn.Module):
     """
     super(Net, self).__init__() # inherit from parent
 
+    # spatial dimensions = 8x8
     self.a1 = nn.Conv2d(num_inputs, 16, kernel_size=3, padding=1)
     self.a2 = nn.Conv2d(16, 16, kernel_size=3, padding=1)
     self.a3 = nn.Conv2d(16, 32, kernel_size=3, stride=2)
@@ -68,30 +69,33 @@ class Net(nn.Module):
     self.last = nn.Linear(128, num_outputs)
 
   def forward(self, x):
-    # 4x4
-    # 2x2
-    # 1x128
-    x = x.view(-1, 128)
+    # spatial dimensions = 8x8
     x = self.relu(self.a1(x))
     x = self.relu(self.a2(x))
     x = self.relu(self.a3(x))
 
+    # spatial dimensions = 8/2 x 8/2
     x = self.relu(self.b1(x))
     x = self.relu(self.b2(x))
     x = self.relu(self.b3(x))
 
+    # spatial dimensions = 8/2^2 x 8/2^2
     x = self.relu(self.c1(x))
     x = self.relu(self.c2(x))
     x = self.relu(self.c3(x))
 
+    # spatial dimensions = 8/2^3 x 8/2^3
     x = self.relu(self.d1(x))
     x = self.relu(self.d2(x))
     x = self.relu(self.d3(x))
 
+    B, T, C, _ = x.shape # (batch, num_filters, spatial_height, spatial_width)
+    x = x.view(B, C * T) # (batch, num_filters * spatial_height * spatial_width)
     x = self.last(x)
 
-    # value output
-    return F.tanh(x)
+    out = self.tanh(x)
+
+    return out
 
 if __name__ == "__main__":
 
