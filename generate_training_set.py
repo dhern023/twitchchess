@@ -67,6 +67,9 @@ def get_dataset_via_pgn(path_dir_pgn, num_samples=None):
 
 if __name__ == "__main__":
   DIR_DATA = pathtlib.Path(__file__).parent / "data"
+  DIR_OUT = pathlib.Path(__file__).parent / "processed"
+  DIR_OUT.mkdir(exist_ok=True, parents=True)
+
   X,Y = get_dataset_via_pgn(DIR_DATA, 25e6)
-  np.savez("processed/dataset_25M.npz", X, Y)
+  np.savez(DIR_OUT / "dataset_25M.npz", X, Y)
 
