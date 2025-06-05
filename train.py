@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
   device = "cpu"
   if torch.cuda.is_available():
-      device = "cuda":
+      device = "cuda"
 
   fname_in = pathlib.Path(__file__) / "processed" / "dataset_5M.npz"
   DIR_OUT = pathlib.Path(__file__).parent / "nets"
